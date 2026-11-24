@@ -1,12 +1,9 @@
 {
-  "projectId": "gen-lang-client-0557312943",
-  "appId": "1:546377064603:web:1d1db8a8b2ec90e95aa63e",
-  "apiKey": "AIzaSyBfK91sQ1VVxsopLh6l8Astaz3n0hOOmHk",
-  "authDomain": "gen-lang-client-0557312943.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-taskearnhub-f7292225-6c41-41e6-a48d-cf09d4917289",
-  "storageBucket": "gen-lang-client-0557312943.firebasestorage.app",
-  "messagingSenderId": "546377064603",
-  "measurementId": "",
-  "oAuthClientId": "546377064603-s1l8cbq3fa63vthvfb8sgejcpcbcovvf.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "apiKey": "AIzaSyBGzm88TsPocVmpIcFIdo8A1v_-_04gZjc",
+  "authDomain": "://firebaseapp.com",
+  "projectId": "capture-on",
+  "storageBucket": "capture-on.firebasestorage.app",
+  "messagingSenderId": "592315754992",
+  "appId": "1:592315754992:web:6d52c67cfd318d108a5535",
+  "measurementId": "G-8KMK9D7D3Z"
 }
