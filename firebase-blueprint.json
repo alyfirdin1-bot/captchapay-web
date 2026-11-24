@@ -1,0 +1,386 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile, earnings balance, daily task counters, and account access status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "maxLength": 120 },
+        "email": { "type": "string", "maxLength": 200 },
+        "avatar": { "type": "string", "maxLength": 500 },
+        "role": { "type": "string", "enum": ["user", "admin"], "maxLength": 16 },
+        "balance": { "type": "number" },
+        "totalEarned": { "type": "number" },
+        "totalWithdrawn": { "type": "number" },
+        "totalRecharged": { "type": "number" },
+        "captchasSolvedToday": { "type": "number" },
+        "solvedTodayByType": { "type": "object" },
+        "lastSolvedAtByType": { "type": "object" },
+        "totalCaptchasSolved": { "type": "number" },
+        "videosWatchedToday": { "type": "number" },
+        "totalVideosWatched": { "type": "number" },
+        "totalAdClicks": { "type": "number" },
+        "incompleteAdsCount": { "type": "number" },
+        "totalAdEarned": { "type": "number" },
+        "lastAdWatchedAt": { "type": "number" },
+        "completedAdIds": { "type": "array" },
+        "vipTier": { "type": "string", "enum": ["free", "silver", "gold", "diamond"], "maxLength": 16 },
+        "customDailyLimit": { "type": "number" },
+        "isBanned": { "type": "boolean" },
+        "joinedAt": { "type": "string", "maxLength": 64 },
+        "lastLogin": { "type": "string", "maxLength": 64 },
+        "lastSeen": { "type": "string", "maxLength": 64 },
+        "referralCode": { "type": "string", "maxLength": 64 },
+        "referredBy": { "type": "string", "maxLength": 128 },
+        "totalReferralEarned": { "type": "number" },
+        "lastCheckInDate": { "type": "string", "maxLength": 32 },
+        "checkInStreak": { "type": "number" },
+        "withdrawPinHash": { "type": "string", "maxLength": 160 },
+        "withdrawPinUpdatedAt": { "type": "string", "maxLength": 64 },
+        "lastClaimedP2pId": { "type": "string", "maxLength": 128 },
+        "claimedP2pIds": { "type": "array" },
+        "lastPlanSubId": { "type": "string", "maxLength": 128 },
+        "totalPlanEarned": { "type": "number" },
+        "telegramChatId": { "type": "string", "maxLength": 32, "pattern": "^-?[0-9]{5,20}$" },
+        "telegramUsername": { "type": "string", "maxLength": 64 },
+        "telegramAlertPrefs": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "uid",
+        "name",
+        "email",
+        "avatar",
+        "role",
+        "balance",
+        "totalEarned",
+        "totalWithdrawn",
+        "totalRecharged",
+        "captchasSolvedToday",
+        "totalCaptchasSolved",
+        "vipTier",
+        "isBanned",
+        "joinedAt",
+        "lastLogin",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SystemSettings": {
+      "title": "SystemSettings",
+      "description": "Global platform configuration, captcha rates, ad links, payment numbers, and notices",
+      "type": "object",
+      "properties": {
+        "adminEmail": { "type": "string", "maxLength": 200 },
+        "minWithdrawal": { "type": "number" },
+        "rewardPerText": { "type": "number" },
+        "rewardPerMath": { "type": "number" },
+        "rewardPerGrid": { "type": "number" },
+        "rewardPerSlider": { "type": "number" },
+        "dailyFreeLimit": { "type": "number" },
+        "dailySilverLimit": { "type": "number" },
+        "dailyGoldLimit": { "type": "number" },
+        "dailyDiamondLimit": { "type": "number" },
+        "useVipMultiplier": { "type": "boolean" },
+        "captchaConfigs": { "type": "object" },
+        "adConfig": { "type": "object" },
+        "videoAds": { "type": "array" },
+        "earningPlans": { "type": "array" },
+        "p2pConfig": { "type": "object" },
+        "withdrawalSchedule": { "type": "object" },
+        "paymentNumbers": { "type": "object" },
+        "operatorLogos": { "type": "object" },
+        "notice": { "type": "string", "maxLength": 500 },
+        "isMaintenance": { "type": "boolean" },
+        "announcements": { "type": "array" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["adminEmail", "minWithdrawal", "notice", "isMaintenance", "updatedAt"]
+    },
+    "RechargeRequest": {
+      "title": "RechargeRequest",
+      "description": "Mobile recharge request submitted by a user from earned balance",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userName": { "type": "string", "maxLength": 120 },
+        "userEmail": { "type": "string", "maxLength": 200 },
+        "amount": { "type": "number" },
+        "method": { "type": "string", "maxLength": 40 },
+        "senderNumber": { "type": "string", "maxLength": 40 },
+        "senderSim": { "type": "string", "maxLength": 40 },
+        "trxId": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"], "maxLength": 16 },
+        "adminNote": { "type": "string", "maxLength": 300 },
+        "createdAtIso": { "type": "string", "maxLength": 64 },
+        "processedAt": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "userName", "userEmail", "amount", "method", "senderNumber", "trxId", "status", "createdAt"]
+    },
+    "WithdrawalRequest": {
+      "title": "WithdrawalRequest",
+      "description": "Withdrawal payout request submitted by a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userName": { "type": "string", "maxLength": 120 },
+        "userEmail": { "type": "string", "maxLength": 200 },
+        "amount": { "type": "number" },
+        "method": { "type": "string", "maxLength": 40 },
+        "accountNumber": { "type": "string", "maxLength": 120 },
+        "accountType": { "type": "string", "enum": ["personal", "agent"], "maxLength": 16 },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"], "maxLength": 16 },
+        "payoutTrxId": { "type": "string", "maxLength": 80 },
+        "adminNote": { "type": "string", "maxLength": 300 },
+        "createdAtIso": { "type": "string", "maxLength": 64 },
+        "processedAt": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "userName", "userEmail", "amount", "method", "accountNumber", "accountType", "status", "createdAt"]
+    },
+    "AdWatchLog": {
+      "title": "AdWatchLog",
+      "description": "Video ad watch monitoring log for completed and incomplete views",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sessionId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userName": { "type": "string", "maxLength": 120 },
+        "userEmail": { "type": "string", "maxLength": 200 },
+        "adId": { "type": "string", "maxLength": 128 },
+        "adTitle": { "type": "string", "maxLength": 200 },
+        "adUrl": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["clicked", "completed", "incomplete"], "maxLength": 16 },
+        "reviewStatus": { "type": "string", "enum": ["in_review", "reviewed"], "maxLength": 16 },
+        "watchedSeconds": { "type": "number" },
+        "requiredSeconds": { "type": "number" },
+        "earned": { "type": "number" },
+        "createdAtIso": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "sessionId", "userId", "userName", "userEmail", "adId", "adTitle", "adUrl", "status", "watchedSeconds", "requiredSeconds", "earned", "createdAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable admin action audit trail",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "action": { "type": "string", "maxLength": 120 },
+        "actorEmail": { "type": "string", "maxLength": 200 },
+        "details": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "timestamp", "action", "actorEmail", "details", "createdAt"]
+    },
+    "WalletDirectoryEntry": {
+      "title": "WalletDirectoryEntry",
+      "description": "Hashed-email recipient lookup directory for P2P transfers without exposing PII",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "maxLength": 120 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "uid", "name", "updatedAt"]
+    },
+    "P2PTransfer": {
+      "title": "P2PTransfer",
+      "description": "User-to-user P2P wallet transfer record with atomic claim verification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "senderId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "senderName": { "type": "string", "maxLength": 120 },
+        "senderEmail": { "type": "string", "maxLength": 200 },
+        "recipientId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "receiverId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "recipientName": { "type": "string", "maxLength": 120 },
+        "recipientEmail": { "type": "string", "maxLength": 200 },
+        "amount": { "type": "number" },
+        "fee": { "type": "number" },
+        "totalDeducted": { "type": "number" },
+        "note": { "type": "string", "maxLength": 200 },
+        "status": { "type": "string", "enum": ["pending", "sent", "claimed"], "maxLength": 16 },
+        "createdAtIso": { "type": "string", "maxLength": 64 },
+        "claimedAtIso": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "senderId", "senderName", "senderEmail", "recipientName", "recipientEmail", "amount", "fee", "totalDeducted", "status", "createdAt"]
+    },
+    "SupportTicket": {
+      "title": "SupportTicket",
+      "description": "User support tickets and admin replies",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userName": { "type": "string", "maxLength": 120 },
+        "userEmail": { "type": "string", "maxLength": 200 },
+        "subject": { "type": "string", "maxLength": 200 },
+        "message": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["open", "answered", "resolved", "closed"], "maxLength": 16 },
+        "adminReply": { "type": "string", "maxLength": 1000 },
+        "createdAtIso": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "userName", "userEmail", "subject", "message", "status", "createdAt", "updatedAt"]
+    },
+    "AppNotification": {
+      "title": "AppNotification",
+      "description": "Admin broadcast notifications displayed in user notification feed",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "maxLength": 150 },
+        "message": { "type": "string", "maxLength": 500 },
+        "type": { "type": "string", "enum": ["info", "success", "warning", "broadcast"], "maxLength": 16 },
+        "readBy": { "type": "array" },
+        "createdAtIso": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "message", "type", "readBy", "createdAt"]
+    },
+    "UserPlanSubscription": {
+      "title": "UserPlanSubscription",
+      "description": "Purchased daily earning plan subscription and daily claim tracker",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userName": { "type": "string", "maxLength": 120 },
+        "userEmail": { "type": "string", "maxLength": 200 },
+        "planId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "planName": { "type": "string", "maxLength": 120 },
+        "price": { "type": "number" },
+        "dailyIncome": { "type": "number" },
+        "durationDays": { "type": "number" },
+        "claimedDays": { "type": "number" },
+        "totalClaimedAmount": { "type": "number" },
+        "lastClaimDate": { "type": "string", "maxLength": 32 },
+        "status": { "type": "string", "enum": ["active", "completed"], "maxLength": 16 },
+        "purchasedAtIso": { "type": "string", "maxLength": 64 },
+        "lastClaimedAtIso": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "userId",
+        "userName",
+        "userEmail",
+        "planId",
+        "planName",
+        "price",
+        "dailyIncome",
+        "durationDays",
+        "claimedDays",
+        "totalClaimedAmount",
+        "lastClaimDate",
+        "status",
+        "purchasedAtIso",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "TelegramVaultConfig": {
+      "title": "TelegramVaultConfig",
+      "description": "Admin-only encrypted Telegram Bot and Send-Only Channel Bot configuration vault for persistent auto-restore",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "botTokenEnc": { "type": "string", "maxLength": 512 },
+        "botInfo": { "type": "object" },
+        "channelBotTokenEnc": { "type": "string", "maxLength": 512 },
+        "channelBotInfo": { "type": "object" },
+        "channelChatId": { "type": "string", "maxLength": 128 },
+        "channelTitle": { "type": "string", "maxLength": 200 },
+        "channelEnabled": { "type": "boolean" },
+        "adminRadarEnabled": { "type": "boolean" },
+        "updatedBy": { "type": "string", "maxLength": 200 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "channelEnabled", "adminRadarEnabled", "updatedBy", "updatedAt"]
+    },
+    "SmsGatewayVaultConfig": {
+      "title": "SmsGatewayVaultConfig",
+      "description": "Admin-only encrypted Android Deposit SMS Gateway token and configuration vault for persistent auto-restore",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "gatewayTokenEnc": { "type": "string", "maxLength": 512 },
+        "enabled": { "type": "boolean" },
+        "paymentSmsOnly": { "type": "boolean" },
+        "autoMatchAlertTelegram": { "type": "boolean" },
+        "updatedBy": { "type": "string", "maxLength": 200 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "enabled", "paymentSmsOnly", "updatedBy", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Persistent user account profile, balance, and daily task counters"
+    },
+    "/settings/global": {
+      "schema": { "$ref": "#/entities/SystemSettings" },
+      "description": "Global platform rates, captcha configs, video ads, earning plans, payment numbers, operator logos, P2P & payout schedule, and notice"
+    },
+    "/recharges/{rechargeId}": {
+      "schema": { "$ref": "#/entities/RechargeRequest" },
+      "description": "Mobile recharge requests tied to userId"
+    },
+    "/withdrawals/{withdrawalId}": {
+      "schema": { "$ref": "#/entities/WithdrawalRequest" },
+      "description": "Withdrawal payout requests tied to userId"
+    },
+    "/adWatchLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AdWatchLog" },
+      "description": "Real-time video ad watch audit logs per user"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Admin activity and financial adjustment audit logs"
+    },
+    "/walletDirectory/{emailHash}": {
+      "schema": { "$ref": "#/entities/WalletDirectoryEntry" },
+      "description": "Hashed-email recipient directory for P2P transfers"
+    },
+    "/p2pTransfers/{transferId}": {
+      "schema": { "$ref": "#/entities/P2PTransfer" },
+      "description": "User-to-user P2P wallet transfers"
+    },
+    "/supportTickets/{ticketId}": {
+      "schema": { "$ref": "#/entities/SupportTicket" },
+      "description": "Support tickets submitted by users"
+    },
+    "/notifications/{notifId}": {
+      "schema": { "$ref": "#/entities/AppNotification" },
+      "description": "Broadcast notifications sent by admin"
+    },
+    "/userPlans/{subId}": {
+      "schema": { "$ref": "#/entities/UserPlanSubscription" },
+      "description": "Purchased daily earning plan subscriptions and daily claim history per user"
+    },
+    "/telegramVault/{vaultId}": {
+      "schema": { "$ref": "#/entities/TelegramVaultConfig" },
+      "description": "Admin-only encrypted persistence vault for Telegram Bot and Channel Notification Bot credentials"
+    },
+    "/smsGatewayVault/{vaultId}": {
+      "schema": { "$ref": "#/entities/SmsGatewayVaultConfig" },
+      "description": "Admin-only encrypted persistence vault for Android Deposit SMS Gateway authentication token and monitoring settings"
+    }
+  }
+}

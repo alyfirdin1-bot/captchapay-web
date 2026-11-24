@@ -1,0 +1,953 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Reusable Security Primitives ---
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdminEmail() {
+      return isSignedIn() &&
+        request.auth.token.email == 'mdsohag123358@gmail.com' &&
+        request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isAdminEmail() || (
+        isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isUserNotBanned(uid) {
+      return !exists(/databases/$(database)/documents/users/$(uid)) ||
+        !('isBanned' in get(/databases/$(database)/documents/users/$(uid)).data) ||
+        get(/databases/$(database)/documents/users/$(uid)).data.isBanned == false;
+    }
+
+    function isExistingNotBanned() {
+      return !('isBanned' in existing()) || existing().isBanned == false;
+    }
+
+    function isIncomingNotBanned() {
+      return !('isBanned' in incoming()) || incoming().isBanned == false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isNonNegNumber(v) {
+      return (v is int || v is float) && v >= 0;
+    }
+
+    // --- Validation Blueprints ---
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+          'id', 'uid', 'name', 'email', 'avatar', 'role',
+          'balance', 'totalEarned', 'totalWithdrawn', 'totalRecharged',
+          'captchasSolvedToday', 'totalCaptchasSolved', 'vipTier',
+          'isBanned', 'joinedAt', 'lastLogin', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'uid', 'name', 'email', 'avatar', 'role',
+          'balance', 'totalEarned', 'totalWithdrawn', 'totalRecharged',
+          'captchasSolvedToday', 'solvedTodayByType', 'lastSolvedAtByType',
+          'totalCaptchasSolved', 'videosWatchedToday', 'totalVideosWatched',
+          'totalAdClicks', 'incompleteAdsCount', 'totalAdEarned',
+          'lastAdWatchedAt', 'completedAdIds', 'vipTier', 'customDailyLimit',
+          'isBanned', 'joinedAt', 'lastLogin', 'lastSeen', 'referralCode',
+          'referredBy', 'totalReferralEarned', 'lastCheckInDate', 'checkInStreak',
+          'withdrawPinHash', 'withdrawPinUpdatedAt', 'lastClaimedP2pId', 'claimedP2pIds', 'lastPlanSubId', 'totalPlanEarned',
+          'telegramChatId', 'telegramUsername', 'telegramAlertPrefs', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.uid) &&
+        data.id == data.uid &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 200 &&
+        data.avatar is string && data.avatar.size() <= 500 &&
+        data.role in ['user', 'admin'] &&
+        isNonNegNumber(data.balance) && data.balance <= 10000000 &&
+        isNonNegNumber(data.totalEarned) && data.totalEarned <= 100000000 &&
+        isNonNegNumber(data.totalWithdrawn) && data.totalWithdrawn <= 100000000 &&
+        isNonNegNumber(data.totalRecharged) && data.totalRecharged <= 100000000 &&
+        isNonNegNumber(data.captchasSolvedToday) && data.captchasSolvedToday <= 100000 &&
+        isNonNegNumber(data.totalCaptchasSolved) && data.totalCaptchasSolved <= 10000000 &&
+        data.vipTier in ['free', 'silver', 'gold', 'diamond'] &&
+        data.isBanned is bool &&
+        data.joinedAt is string && data.joinedAt.size() <= 64 &&
+        data.lastLogin is string && data.lastLogin.size() <= 64 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp &&
+        (!('lastSeen' in data) || (data.lastSeen is string && data.lastSeen.size() <= 64)) &&
+        (!('solvedTodayByType' in data) || data.solvedTodayByType is map) &&
+        (!('lastSolvedAtByType' in data) || data.lastSolvedAtByType is map) &&
+        (!('videosWatchedToday' in data) || isNonNegNumber(data.videosWatchedToday)) &&
+        (!('totalVideosWatched' in data) || isNonNegNumber(data.totalVideosWatched)) &&
+        (!('totalAdClicks' in data) || isNonNegNumber(data.totalAdClicks)) &&
+        (!('incompleteAdsCount' in data) || isNonNegNumber(data.incompleteAdsCount)) &&
+        (!('totalAdEarned' in data) || isNonNegNumber(data.totalAdEarned)) &&
+        (!('lastAdWatchedAt' in data) || isNonNegNumber(data.lastAdWatchedAt)) &&
+        (!('customDailyLimit' in data) || isNonNegNumber(data.customDailyLimit)) &&
+        (!('referralCode' in data) || (data.referralCode is string && data.referralCode.size() <= 64)) &&
+        (!('referredBy' in data) || (data.referredBy is string && data.referredBy.size() <= 128)) &&
+        (!('totalReferralEarned' in data) || isNonNegNumber(data.totalReferralEarned)) &&
+        (!('lastCheckInDate' in data) || (data.lastCheckInDate is string && data.lastCheckInDate.size() <= 32)) &&
+        (!('checkInStreak' in data) || isNonNegNumber(data.checkInStreak)) &&
+        (!('withdrawPinHash' in data) || (data.withdrawPinHash is string && data.withdrawPinHash.size() >= 16 && data.withdrawPinHash.size() <= 160)) &&
+        (!('withdrawPinUpdatedAt' in data) || (data.withdrawPinUpdatedAt is string && data.withdrawPinUpdatedAt.size() <= 64)) &&
+        (!('lastClaimedP2pId' in data) || isValidId(data.lastClaimedP2pId)) &&
+        (!('lastPlanSubId' in data) || isValidId(data.lastPlanSubId)) &&
+        (!('totalPlanEarned' in data) || isNonNegNumber(data.totalPlanEarned)) &&
+        (!('claimedP2pIds' in data) || (
+          data.claimedP2pIds is list &&
+          data.claimedP2pIds.size() <= 500 &&
+          (data.claimedP2pIds.size() == 0 || (data.claimedP2pIds[0] is string && data.claimedP2pIds[0].size() <= 128))
+        )) &&
+        (!('completedAdIds' in data) || (
+          data.completedAdIds is list &&
+          data.completedAdIds.size() <= 200 &&
+          (data.completedAdIds.size() == 0 || (data.completedAdIds[0] is string && data.completedAdIds[0].size() <= 128))
+        )) &&
+        (!('telegramChatId' in data) || (
+          data.telegramChatId is string &&
+          data.telegramChatId.size() <= 32 &&
+          (data.telegramChatId == '' || data.telegramChatId.matches('^-?[0-9]{5,20}$'))
+        )) &&
+        (!('telegramUsername' in data) || (
+          data.telegramUsername is string &&
+          data.telegramUsername.size() <= 64
+        )) &&
+        (!('telegramAlertPrefs' in data) || data.telegramAlertPrefs is map);
+    }
+
+    function isUserHeartbeatAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly(['name', 'avatar', 'lastLogin', 'lastSeen', 'updatedAt']);
+    }
+
+    function isUserSetWithdrawPinAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly([
+          'withdrawPinHash', 'withdrawPinUpdatedAt', 'lastSeen', 'updatedAt'
+        ]) &&
+        incoming().withdrawPinHash is string &&
+        incoming().withdrawPinHash.size() >= 16 &&
+        incoming().withdrawPinHash.size() <= 160 &&
+        incoming().withdrawPinUpdatedAt is string &&
+        incoming().withdrawPinUpdatedAt.size() <= 64;
+    }
+
+    function isUserTelegramSettingsAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly([
+        'telegramChatId', 'telegramUsername', 'telegramAlertPrefs', 'lastSeen', 'updatedAt'
+      ]);
+    }
+
+    function isUserCaptchaSolveAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly([
+          'balance', 'totalEarned', 'captchasSolvedToday', 'solvedTodayByType',
+          'lastSolvedAtByType', 'totalCaptchasSolved', 'lastSeen', 'updatedAt'
+        ]) &&
+        incoming().balance >= existing().balance &&
+        incoming().balance <= existing().balance + 50 &&
+        incoming().totalEarned >= existing().totalEarned &&
+        incoming().totalEarned <= existing().totalEarned + 50 &&
+        incoming().captchasSolvedToday == existing().captchasSolvedToday + 1 &&
+        incoming().totalCaptchasSolved == existing().totalCaptchasSolved + 1;
+    }
+
+    function isUserAdAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly([
+          'balance', 'totalEarned', 'totalAdEarned', 'videosWatchedToday',
+          'totalVideosWatched', 'totalAdClicks', 'incompleteAdsCount',
+          'lastAdWatchedAt', 'completedAdIds', 'lastSeen', 'updatedAt'
+        ]) &&
+        incoming().balance >= existing().balance &&
+        incoming().balance <= existing().balance + 100 &&
+        incoming().totalEarned >= existing().totalEarned &&
+        incoming().totalEarned <= existing().totalEarned + 100 &&
+        (!('totalAdClicks' in incoming()) || !('totalAdClicks' in existing()) || incoming().totalAdClicks >= existing().totalAdClicks) &&
+        (!('totalVideosWatched' in incoming()) || !('totalVideosWatched' in existing()) || incoming().totalVideosWatched <= existing().totalVideosWatched + 1);
+    }
+
+    function isUserDailyCheckInAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly([
+          'balance', 'totalEarned', 'lastCheckInDate', 'checkInStreak', 'lastSeen', 'updatedAt'
+        ]) &&
+        'lastCheckInDate' in incoming() &&
+        incoming().lastCheckInDate is string &&
+        incoming().lastCheckInDate.size() >= 8 &&
+        incoming().lastCheckInDate.size() <= 32 &&
+        (!('lastCheckInDate' in existing()) || incoming().lastCheckInDate != existing().lastCheckInDate) &&
+        'checkInStreak' in incoming() &&
+        isNonNegNumber(incoming().checkInStreak) &&
+        incoming().checkInStreak >= 1 &&
+        incoming().checkInStreak <= 10000 &&
+        incoming().balance >= existing().balance + 4.98 &&
+        incoming().balance <= existing().balance + 20.02 &&
+        incoming().totalEarned >= existing().totalEarned + 4.98 &&
+        incoming().totalEarned <= existing().totalEarned + 20.02;
+    }
+
+    function isUserHoldDeductAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly(['balance', 'lastSeen', 'updatedAt']) &&
+        incoming().balance >= 0 &&
+        incoming().balance < existing().balance;
+    }
+
+    function isUserPlanPurchaseAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly([
+          'balance', 'lastPlanSubId', 'lastSeen', 'updatedAt'
+        ]) &&
+        'lastPlanSubId' in incoming() &&
+        isValidId(incoming().lastPlanSubId) &&
+        !exists(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)) &&
+        existsAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)) &&
+        getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.userId == request.auth.uid &&
+        getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.price >= 10 &&
+        incoming().balance >= 0 &&
+        incoming().balance >= existing().balance - getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.price - 0.02 &&
+        incoming().balance <= existing().balance - getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.price + 0.02;
+    }
+
+    function isUserPlanClaimAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly([
+          'balance', 'totalEarned', 'totalPlanEarned', 'lastPlanSubId', 'lastSeen', 'updatedAt'
+        ]) &&
+        'lastPlanSubId' in incoming() &&
+        isValidId(incoming().lastPlanSubId) &&
+        exists(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)) &&
+        existsAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)) &&
+        get(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.userId == request.auth.uid &&
+        get(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.status == 'active' &&
+        getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.claimedDays == get(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.claimedDays + 1 &&
+        getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.dailyIncome >= 1 &&
+        getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.dailyIncome <= 50000 &&
+        incoming().balance >= existing().balance + getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.dailyIncome - 0.02 &&
+        incoming().balance <= existing().balance + getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.dailyIncome + 0.02 &&
+        incoming().totalEarned >= existing().totalEarned + getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.dailyIncome - 0.02 &&
+        incoming().totalEarned <= existing().totalEarned + getAfter(/databases/$(database)/documents/userPlans/$(incoming().lastPlanSubId)).data.dailyIncome + 0.02;
+    }
+
+    function isTransferSender(data) {
+      return data.senderId == request.auth.uid;
+    }
+
+    function isTransferReceiver(data) {
+      return (
+        ('recipientId' in data && data.recipientId == request.auth.uid) ||
+        ('receiverId' in data && data.receiverId == request.auth.uid)
+      );
+    }
+
+    function isValidP2PClaimForTransfer(transferBefore) {
+      return transferBefore.status in ['pending', 'sent'] &&
+        isTransferReceiver(transferBefore) &&
+        'amount' in transferBefore &&
+        isNonNegNumber(transferBefore.amount) &&
+        transferBefore.amount >= 10 &&
+        transferBefore.amount <= 50000 &&
+        incoming().balance >= existing().balance + transferBefore.amount - 0.02 &&
+        incoming().balance <= existing().balance + transferBefore.amount + 0.02;
+    }
+
+    function isUserP2PClaimAction() {
+      return incoming().diff(existing()).affectedKeys().hasOnly([
+          'balance', 'lastClaimedP2pId', 'claimedP2pIds', 'lastSeen', 'updatedAt'
+        ]) &&
+        'lastClaimedP2pId' in incoming() &&
+        isValidId(incoming().lastClaimedP2pId) &&
+        (!('claimedP2pIds' in existing()) || existing().claimedP2pIds is list) &&
+        existing().get('claimedP2pIds', []).size() < 500 &&
+        !(request.resource.data.lastClaimedP2pId in existing().get('claimedP2pIds', [])) &&
+        'claimedP2pIds' in incoming() &&
+        incoming().claimedP2pIds == existing().get('claimedP2pIds', []).concat([request.resource.data.lastClaimedP2pId]) &&
+        exists(/databases/$(database)/documents/p2pTransfers/$(request.resource.data.lastClaimedP2pId)) &&
+        isValidP2PClaimForTransfer(
+          get(/databases/$(database)/documents/p2pTransfers/$(request.resource.data.lastClaimedP2pId)).data
+        );
+    }
+
+    function isValidP2PDirectCreditPayload(userId, transferId, transferAfter) {
+      return transferAfter.id == transferId &&
+        transferAfter.senderId == request.auth.uid &&
+        (
+          ('recipientId' in transferAfter && transferAfter.recipientId == userId) ||
+          ('receiverId' in transferAfter && transferAfter.receiverId == userId)
+        ) &&
+        transferAfter.status == 'claimed' &&
+        'amount' in transferAfter &&
+        isNonNegNumber(transferAfter.amount) &&
+        transferAfter.amount >= 10 &&
+        transferAfter.amount <= 50000 &&
+        incoming().balance >= existing().balance + transferAfter.amount - 0.02 &&
+        incoming().balance <= existing().balance + transferAfter.amount + 0.02;
+    }
+
+    function isUserP2PDirectCreditAction(userId) {
+      return userId != request.auth.uid &&
+        existing().isBanned == false &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'balance', 'lastClaimedP2pId', 'updatedAt'
+        ]) &&
+        'lastClaimedP2pId' in incoming() &&
+        isValidId(incoming().lastClaimedP2pId) &&
+        !exists(/databases/$(database)/documents/p2pTransfers/$(request.resource.data.lastClaimedP2pId)) &&
+        existsAfter(/databases/$(database)/documents/p2pTransfers/$(request.resource.data.lastClaimedP2pId)) &&
+        isValidP2PDirectCreditPayload(
+          userId,
+          request.resource.data.lastClaimedP2pId,
+          getAfter(/databases/$(database)/documents/p2pTransfers/$(request.resource.data.lastClaimedP2pId)).data
+        );
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll(['adminEmail', 'minWithdrawal', 'notice', 'isMaintenance', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'adminEmail', 'minWithdrawal', 'rewardPerText', 'rewardPerMath',
+          'rewardPerGrid', 'rewardPerSlider', 'dailyFreeLimit', 'dailySilverLimit',
+          'dailyGoldLimit', 'dailyDiamondLimit', 'useVipMultiplier', 'captchaConfigs',
+          'adConfig', 'videoAds', 'earningPlans', 'p2pConfig', 'withdrawalSchedule', 'paymentNumbers', 'operatorLogos', 'notice', 'isMaintenance', 'announcements', 'updatedAt'
+        ]) &&
+        data.adminEmail is string && data.adminEmail.size() <= 200 &&
+        isNonNegNumber(data.minWithdrawal) &&
+        data.notice is string && data.notice.size() <= 500 &&
+        data.isMaintenance is bool &&
+        data.updatedAt is timestamp &&
+        (!('videoAds' in data) || (
+          data.videoAds is list &&
+          data.videoAds.size() <= 100 &&
+          (data.videoAds.size() == 0 || data.videoAds[0] is map)
+        )) &&
+        (!('earningPlans' in data) || (
+          data.earningPlans is list &&
+          data.earningPlans.size() <= 50 &&
+          (data.earningPlans.size() == 0 || data.earningPlans[0] is map)
+        )) &&
+        (!('announcements' in data) || (
+          data.announcements is list &&
+          data.announcements.size() <= 100 &&
+          (data.announcements.size() == 0 || data.announcements[0] is map)
+        )) &&
+        (!('p2pConfig' in data) || data.p2pConfig is map) &&
+        (!('operatorLogos' in data) || data.operatorLogos is map) &&
+        (!('withdrawalSchedule' in data) || data.withdrawalSchedule is map);
+    }
+
+    function isValidWalletDirectoryEntry(data) {
+      return data.keys().hasAll(['id', 'uid', 'name', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'uid', 'name', 'updatedAt']) &&
+        isValidId(data.id) &&
+        isValidId(data.uid) &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidP2PTransfer(data) {
+      return data.keys().hasAll([
+          'id', 'senderId', 'senderName', 'senderEmail',
+          'recipientName', 'recipientEmail', 'amount', 'fee', 'totalDeducted',
+          'status', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'senderId', 'senderName', 'senderEmail', 'recipientId', 'receiverId',
+          'recipientName', 'recipientEmail', 'amount', 'fee', 'totalDeducted',
+          'note', 'status', 'createdAtIso', 'claimedAtIso', 'createdAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.senderId) &&
+        (
+          ('recipientId' in data && isValidId(data.recipientId) && data.senderId != data.recipientId) ||
+          ('receiverId' in data && isValidId(data.receiverId) && data.senderId != data.receiverId)
+        ) &&
+        (!('recipientId' in data) || (isValidId(data.recipientId) && data.senderId != data.recipientId)) &&
+        (!('receiverId' in data) || (isValidId(data.receiverId) && data.senderId != data.receiverId)) &&
+        data.senderName is string && data.senderName.size() <= 120 &&
+        data.senderEmail is string && data.senderEmail.size() <= 200 &&
+        data.recipientName is string && data.recipientName.size() <= 120 &&
+        data.recipientEmail is string && data.recipientEmail.size() <= 200 &&
+        isNonNegNumber(data.amount) && data.amount >= 10 && data.amount <= 50000 &&
+        isNonNegNumber(data.fee) && data.fee <= 10000 &&
+        isNonNegNumber(data.totalDeducted) && data.totalDeducted >= data.amount && data.totalDeducted <= 60000 &&
+        data.status in ['pending', 'sent', 'claimed'] &&
+        data.createdAt is timestamp &&
+        (!('note' in data) || (data.note is string && data.note.size() <= 200)) &&
+        (!('createdAtIso' in data) || (data.createdAtIso is string && data.createdAtIso.size() <= 64)) &&
+        (!('claimedAtIso' in data) || (data.claimedAtIso is string && data.claimedAtIso.size() <= 64));
+    }
+
+    function isValidP2PClaimUpdate(incomingData, existingData) {
+      return existingData.status in ['pending', 'sent'] &&
+        incomingData.status == 'claimed' &&
+        isTransferReceiver(existingData) &&
+        'amount' in existingData &&
+        isNonNegNumber(existingData.amount) &&
+        existingData.amount >= 10 &&
+        existingData.amount <= 50000 &&
+        'claimedAtIso' in incomingData &&
+        incomingData.claimedAtIso is string &&
+        incomingData.claimedAtIso.size() <= 64 &&
+        incomingData.diff(existingData).affectedKeys().hasOnly(['status', 'claimedAtIso']);
+    }
+
+    function isValidRecharge(data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'userName', 'userEmail', 'amount',
+          'method', 'senderNumber', 'trxId', 'status', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'userId', 'userName', 'userEmail', 'amount',
+          'method', 'senderNumber', 'senderSim', 'trxId', 'status',
+          'adminNote', 'createdAtIso', 'processedAt', 'createdAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.userId) &&
+        data.userName is string && data.userName.size() <= 120 &&
+        data.userEmail is string && data.userEmail.size() <= 200 &&
+        isNonNegNumber(data.amount) && data.amount >= 10 && data.amount <= 50000 &&
+        data.method is string && data.method.size() <= 40 &&
+        data.senderNumber is string && data.senderNumber.size() >= 3 && data.senderNumber.size() <= 40 &&
+        data.trxId is string && data.trxId.size() <= 64 &&
+        data.status in ['pending', 'approved', 'rejected'] &&
+        data.createdAt is timestamp &&
+        (!('senderSim' in data) || (data.senderSim is string && data.senderSim.size() <= 40)) &&
+        (!('adminNote' in data) || (data.adminNote is string && data.adminNote.size() <= 300)) &&
+        (!('createdAtIso' in data) || (data.createdAtIso is string && data.createdAtIso.size() <= 64)) &&
+        (!('processedAt' in data) || (data.processedAt is string && data.processedAt.size() <= 64));
+    }
+
+    function isValidWithdrawal(data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'userName', 'userEmail', 'amount',
+          'method', 'accountNumber', 'accountType', 'status', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'userId', 'userName', 'userEmail', 'amount',
+          'method', 'accountNumber', 'accountType', 'status', 'payoutTrxId',
+          'adminNote', 'createdAtIso', 'processedAt', 'createdAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.userId) &&
+        data.userName is string && data.userName.size() <= 120 &&
+        data.userEmail is string && data.userEmail.size() <= 200 &&
+        isNonNegNumber(data.amount) && data.amount >= 10 && data.amount <= 100000 &&
+        data.method is string && data.method.size() <= 40 &&
+        data.accountNumber is string && data.accountNumber.size() >= 3 && data.accountNumber.size() <= 120 &&
+        data.accountType in ['personal', 'agent'] &&
+        data.status in ['pending', 'approved', 'rejected'] &&
+        data.createdAt is timestamp &&
+        (!('payoutTrxId' in data) || (data.payoutTrxId is string && data.payoutTrxId.size() <= 80)) &&
+        (!('adminNote' in data) || (data.adminNote is string && data.adminNote.size() <= 300)) &&
+        (!('createdAtIso' in data) || (data.createdAtIso is string && data.createdAtIso.size() <= 64)) &&
+        (!('processedAt' in data) || (data.processedAt is string && data.processedAt.size() <= 64));
+    }
+
+    function isValidAdWatchLog(data) {
+      return data.keys().hasAll([
+          'id', 'sessionId', 'userId', 'userName', 'userEmail',
+          'adId', 'adTitle', 'adUrl', 'status', 'watchedSeconds',
+          'requiredSeconds', 'earned', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'sessionId', 'userId', 'userName', 'userEmail',
+          'adId', 'adTitle', 'adUrl', 'status', 'reviewStatus',
+          'watchedSeconds', 'requiredSeconds', 'earned', 'createdAtIso', 'createdAt'
+        ]) &&
+        isValidId(data.id) &&
+        data.sessionId is string && data.sessionId.size() <= 128 &&
+        isValidId(data.userId) &&
+        data.userName is string && data.userName.size() <= 120 &&
+        data.userEmail is string && data.userEmail.size() <= 200 &&
+        data.adId is string && data.adId.size() <= 128 &&
+        data.adTitle is string && data.adTitle.size() <= 200 &&
+        data.adUrl is string && data.adUrl.size() <= 500 &&
+        data.status in ['clicked', 'completed', 'incomplete'] &&
+        (!('reviewStatus' in data) || data.reviewStatus in ['in_review', 'reviewed']) &&
+        isNonNegNumber(data.watchedSeconds) &&
+        isNonNegNumber(data.requiredSeconds) &&
+        isNonNegNumber(data.earned) && data.earned <= 100 &&
+        data.createdAt is timestamp &&
+        (!('createdAtIso' in data) || (data.createdAtIso is string && data.createdAtIso.size() <= 64));
+    }
+
+    function isValidAuditLog(data) {
+      return data.keys().hasAll(['id', 'timestamp', 'action', 'actorEmail', 'details', 'createdAt']) &&
+        data.keys().hasOnly(['id', 'timestamp', 'action', 'actorEmail', 'details', 'createdAt']) &&
+        isValidId(data.id) &&
+        data.timestamp is string && data.timestamp.size() <= 64 &&
+        data.action is string && data.action.size() <= 120 &&
+        data.actorEmail is string && data.actorEmail.size() <= 200 &&
+        data.details is string && data.details.size() <= 500 &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidSupportTicket(data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'userName', 'userEmail', 'subject', 'message', 'status', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'userId', 'userName', 'userEmail', 'subject', 'message',
+          'status', 'adminReply', 'createdAtIso', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.userId) &&
+        data.userName is string && data.userName.size() <= 120 &&
+        data.userEmail is string && data.userEmail.size() <= 200 &&
+        data.subject is string && data.subject.size() >= 1 && data.subject.size() <= 200 &&
+        data.message is string && data.message.size() >= 1 && data.message.size() <= 1000 &&
+        data.status in ['open', 'answered', 'resolved', 'closed'] &&
+        (!('adminReply' in data) || (data.adminReply is string && data.adminReply.size() <= 1000)) &&
+        (!('createdAtIso' in data) || (data.createdAtIso is string && data.createdAtIso.size() <= 64)) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidAppNotification(data) {
+      return data.keys().hasAll(['id', 'title', 'message', 'type', 'readBy', 'createdAt']) &&
+        data.keys().hasOnly(['id', 'title', 'message', 'type', 'readBy', 'createdAtIso', 'createdAt']) &&
+        isValidId(data.id) &&
+        data.title is string && data.title.size() <= 150 &&
+        data.message is string && data.message.size() <= 500 &&
+        data.type in ['info', 'success', 'warning', 'broadcast'] &&
+        data.readBy is list && data.readBy.size() <= 500 &&
+        (!('createdAtIso' in data) || (data.createdAtIso is string && data.createdAtIso.size() <= 64)) &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidUserPlan(data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'userName', 'userEmail', 'planId', 'planName',
+          'price', 'dailyIncome', 'durationDays', 'claimedDays',
+          'totalClaimedAmount', 'lastClaimDate', 'status', 'purchasedAtIso',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'userId', 'userName', 'userEmail', 'planId', 'planName',
+          'price', 'dailyIncome', 'durationDays', 'claimedDays',
+          'totalClaimedAmount', 'lastClaimDate', 'status', 'purchasedAtIso',
+          'lastClaimedAtIso', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.userId) &&
+        data.userName is string && data.userName.size() <= 120 &&
+        data.userEmail is string && data.userEmail.size() <= 200 &&
+        isValidId(data.planId) &&
+        data.planName is string && data.planName.size() >= 1 && data.planName.size() <= 120 &&
+        isNonNegNumber(data.price) && data.price >= 10 && data.price <= 1000000 &&
+        isNonNegNumber(data.dailyIncome) && data.dailyIncome >= 1 && data.dailyIncome <= 50000 &&
+        isNonNegNumber(data.durationDays) && data.durationDays >= 1 && data.durationDays <= 3650 &&
+        isNonNegNumber(data.claimedDays) && data.claimedDays <= data.durationDays &&
+        isNonNegNumber(data.totalClaimedAmount) && data.totalClaimedAmount <= 100000000 &&
+        data.lastClaimDate is string && data.lastClaimDate.size() <= 32 &&
+        data.status in ['active', 'completed'] &&
+        data.purchasedAtIso is string && data.purchasedAtIso.size() <= 64 &&
+        (!('lastClaimedAtIso' in data) || (data.lastClaimedAtIso is string && data.lastClaimedAtIso.size() <= 64)) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidTelegramVault(data) {
+      return data.keys().hasAll(['id', 'channelEnabled', 'adminRadarEnabled', 'updatedBy', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'id', 'botTokenEnc', 'botInfo', 'channelBotTokenEnc', 'channelBotInfo',
+          'channelChatId', 'channelTitle', 'channelEnabled', 'adminRadarEnabled',
+          'updatedBy', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        data.channelEnabled is bool &&
+        data.adminRadarEnabled is bool &&
+        data.updatedBy is string && data.updatedBy.size() >= 3 && data.updatedBy.size() <= 200 &&
+        data.updatedAt is timestamp &&
+        (!('botTokenEnc' in data) || (data.botTokenEnc is string && data.botTokenEnc.size() <= 512)) &&
+        (!('botInfo' in data) || data.botInfo is map) &&
+        (!('channelBotTokenEnc' in data) || (data.channelBotTokenEnc is string && data.channelBotTokenEnc.size() <= 512)) &&
+        (!('channelBotInfo' in data) || data.channelBotInfo is map) &&
+        (!('channelChatId' in data) || (data.channelChatId is string && data.channelChatId.size() <= 128)) &&
+        (!('channelTitle' in data) || (data.channelTitle is string && data.channelTitle.size() <= 200));
+    }
+
+    function isValidSmsGatewayVault(data) {
+      return data.keys().hasAll(['id', 'enabled', 'paymentSmsOnly', 'updatedBy', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'id', 'gatewayTokenEnc', 'enabled', 'paymentSmsOnly',
+          'autoMatchAlertTelegram', 'updatedBy', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        data.enabled is bool &&
+        data.paymentSmsOnly is bool &&
+        (!('autoMatchAlertTelegram' in data) || data.autoMatchAlertTelegram is bool) &&
+        data.updatedBy is string && data.updatedBy.size() >= 3 && data.updatedBy.size() <= 200 &&
+        data.updatedAt is timestamp &&
+        (!('gatewayTokenEnc' in data) || (data.gatewayTokenEnc is string && data.gatewayTokenEnc.size() <= 512));
+    }
+
+    // --- Connectivity Probe Path ---
+    match /test/connection {
+      allow get: if true;
+      allow list, write: if false;
+    }
+
+    // --- Admin Registry ---
+    match /admins/{uid} {
+      allow get: if isValidId(uid) && (isOwner(uid) || isAdmin());
+      allow list, create, update, delete: if false;
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isSignedIn() && (isAdminEmail() || resource.data.uid == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+        isValidId(userId) &&
+        isOwner(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().uid == request.auth.uid &&
+        incoming().id == userId &&
+        incoming().isBanned == false &&
+        incoming().balance == 0 &&
+        incoming().totalEarned == 0 &&
+        incoming().totalWithdrawn == 0 &&
+        incoming().totalRecharged == 0 &&
+        incoming().captchasSolvedToday == 0 &&
+        incoming().totalCaptchasSolved == 0 &&
+        incoming().vipTier == 'free' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        (incoming().role == 'user' || isAdminEmail());
+
+      allow update: if isSignedIn() &&
+        isValidId(userId) &&
+        incoming().uid == existing().uid &&
+        incoming().id == existing().id &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          (
+            incoming().role == existing().role &&
+            isIncomingNotBanned() &&
+            isExistingNotBanned() &&
+            incoming().vipTier == existing().vipTier &&
+            (
+              (
+                isOwner(userId) &&
+                isExistingNotBanned() &&
+                (
+                  isUserHeartbeatAction() ||
+                  isUserSetWithdrawPinAction() ||
+                  isUserTelegramSettingsAction() ||
+                  isUserCaptchaSolveAction() ||
+                  isUserAdAction() ||
+                  isUserDailyCheckInAction() ||
+                  isUserHoldDeductAction() ||
+                  isUserPlanPurchaseAction() ||
+                  isUserPlanClaimAction() ||
+                  isUserP2PClaimAction()
+                )
+              ) ||
+              isUserP2PDirectCreditAction(userId)
+            )
+          )
+        );
+
+      allow delete: if false;
+    }
+
+    // --- System Settings Collection ---
+    match /settings/{settingId} {
+      allow get: if isSignedIn() && isValidId(settingId);
+      allow list: if isAdminEmail();
+      allow create: if isAdmin() && isValidId(settingId) && isValidSettings(incoming()) && incoming().updatedAt == request.time;
+      allow update: if isAdmin() && isValidId(settingId) && isValidSettings(incoming()) && incoming().updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // --- Recharge Requests Collection ---
+    match /recharges/{rechargeId} {
+      allow get: if isSignedIn() && isValidId(rechargeId) && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn();
+
+      allow create: if isSignedIn() &&
+        isValidId(rechargeId) &&
+        isValidRecharge(incoming()) &&
+        incoming().userId == request.auth.uid &&
+        incoming().id == rechargeId &&
+        incoming().status == 'pending' &&
+        incoming().createdAt == request.time &&
+        isUserNotBanned(request.auth.uid);
+
+      allow update: if isAdmin() &&
+        isValidId(rechargeId) &&
+        isValidRecharge(incoming()) &&
+        existing().status == 'pending' &&
+        incoming().id == existing().id &&
+        incoming().userId == existing().userId &&
+        incoming().amount == existing().amount &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'adminNote', 'processedAt']) &&
+        incoming().status in ['approved', 'rejected'];
+
+      allow delete: if false;
+    }
+
+    // --- Withdrawal Requests Collection ---
+    match /withdrawals/{withdrawalId} {
+      allow get: if isSignedIn() && isValidId(withdrawalId) && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn();
+
+      allow create: if isSignedIn() &&
+        isValidId(withdrawalId) &&
+        isValidWithdrawal(incoming()) &&
+        incoming().userId == request.auth.uid &&
+        incoming().id == withdrawalId &&
+        incoming().status == 'pending' &&
+        incoming().createdAt == request.time &&
+        isUserNotBanned(request.auth.uid);
+
+      allow update: if isAdmin() &&
+        isValidId(withdrawalId) &&
+        isValidWithdrawal(incoming()) &&
+        existing().status == 'pending' &&
+        incoming().id == existing().id &&
+        incoming().userId == existing().userId &&
+        incoming().amount == existing().amount &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'payoutTrxId', 'adminNote', 'processedAt']) &&
+        incoming().status in ['approved', 'rejected'];
+
+      allow delete: if false;
+    }
+
+    // --- Video Ad Watch Logs Collection ---
+    match /adWatchLogs/{logId} {
+      allow get: if isSignedIn() && isValidId(logId) && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn();
+
+      allow create: if isSignedIn() &&
+        isValidId(logId) &&
+        isValidAdWatchLog(incoming()) &&
+        incoming().userId == request.auth.uid &&
+        incoming().id == logId &&
+        incoming().createdAt == request.time &&
+        isUserNotBanned(request.auth.uid);
+
+      allow update: if isAdmin() &&
+        isValidId(logId) &&
+        isValidAdWatchLog(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['reviewStatus']);
+
+      allow delete: if false;
+    }
+
+    // --- Admin Audit Logs Collection ---
+    match /auditLogs/{logId} {
+      allow get: if isAdmin() && isValidId(logId);
+      allow list: if isAdminEmail();
+      allow create: if isAdmin() &&
+        isValidId(logId) &&
+        isValidAuditLog(incoming()) &&
+        incoming().id == logId &&
+        incoming().createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // --- P2P Recipient Directory (Hashed Email -> UID + Name) ---
+    match /walletDirectory/{emailHash} {
+      allow get: if isSignedIn() && isValidId(emailHash);
+      allow list: if false;
+      allow create, update: if isSignedIn() &&
+        isValidId(emailHash) &&
+        isValidWalletDirectoryEntry(incoming()) &&
+        incoming().id == emailHash &&
+        incoming().uid == request.auth.uid &&
+        incoming().updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // --- User-to-User P2P Wallet Transfers ---
+    match /p2pTransfers/{transferId} {
+      allow get: if isSignedIn() && isValidId(transferId) && (
+        isTransferSender(resource.data) ||
+        isTransferReceiver(resource.data) ||
+        isAdmin()
+      );
+      allow list: if isSignedIn();
+
+      allow create: if isSignedIn() &&
+        isValidId(transferId) &&
+        isValidP2PTransfer(incoming()) &&
+        incoming().id == transferId &&
+        incoming().senderId == request.auth.uid &&
+        incoming().status == 'claimed' &&
+        incoming().createdAt == request.time &&
+        isUserNotBanned(request.auth.uid) &&
+        getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.balance >= 0 &&
+        getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.balance <= get(/databases/$(database)/documents/users/$(request.auth.uid)).data.balance - incoming().totalDeducted + 0.02;
+
+      allow update: if isSignedIn() &&
+        isValidId(transferId) &&
+        isValidP2PClaimUpdate(incoming(), existing());
+
+      allow delete: if false;
+    }
+
+    // --- Support Tickets Collection ---
+    match /supportTickets/{ticketId} {
+      allow get: if isSignedIn() && isValidId(ticketId) && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow list: if isSignedIn();
+
+      allow create: if isSignedIn() &&
+        isValidId(ticketId) &&
+        isValidSupportTicket(incoming()) &&
+        incoming().id == ticketId &&
+        incoming().userId == request.auth.uid &&
+        incoming().status == 'open' &&
+        !('adminReply' in incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isUserNotBanned(request.auth.uid);
+
+      allow update: if isAdmin() &&
+        isValidId(ticketId) &&
+        isValidSupportTicket(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['adminReply', 'status', 'updatedAt']);
+
+      allow delete: if false;
+    }
+
+    // --- Broadcast Notifications Collection ---
+    match /notifications/{notifId} {
+      allow get: if isSignedIn() && isValidId(notifId);
+      allow list: if isSignedIn() && resource.data.type in ['info', 'success', 'warning', 'broadcast'];
+      allow create: if isAdmin() &&
+        isValidId(notifId) &&
+        isValidAppNotification(incoming()) &&
+        incoming().id == notifId &&
+        incoming().createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // --- User Daily Earning Plan Subscriptions Collection ---
+    match /userPlans/{subId} {
+      allow get: if isSignedIn() && isValidId(subId) && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+        isValidId(subId) &&
+        isValidUserPlan(incoming()) &&
+        incoming().id == subId &&
+        incoming().userId == request.auth.uid &&
+        incoming().claimedDays == 0 &&
+        incoming().totalClaimedAmount == 0 &&
+        incoming().lastClaimDate == '' &&
+        incoming().status == 'active' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isUserNotBanned(request.auth.uid) &&
+        getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.balance >= 0 &&
+        getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.balance <= get(/databases/$(database)/documents/users/$(request.auth.uid)).data.balance - incoming().price + 0.02 &&
+        getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.lastPlanSubId == subId;
+
+      allow update: if isSignedIn() &&
+        isValidId(subId) &&
+        isValidUserPlan(incoming()) &&
+        existing().userId == request.auth.uid &&
+        existing().status == 'active' &&
+        existing().claimedDays < existing().durationDays &&
+        isUserNotBanned(request.auth.uid) &&
+        incoming().id == existing().id &&
+        incoming().userId == existing().userId &&
+        incoming().planId == existing().planId &&
+        incoming().price == existing().price &&
+        incoming().durationDays == existing().durationDays &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().claimedDays == existing().claimedDays + 1 &&
+        incoming().lastClaimDate.size() >= 8 &&
+        incoming().lastClaimDate != existing().lastClaimDate &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'claimedDays', 'totalClaimedAmount', 'lastClaimDate', 'lastClaimedAtIso', 'dailyIncome', 'status', 'updatedAt'
+        ]) &&
+        incoming().totalClaimedAmount >= existing().totalClaimedAmount + incoming().dailyIncome - 0.02 &&
+        incoming().totalClaimedAmount <= existing().totalClaimedAmount + incoming().dailyIncome + 0.02 &&
+        (
+          (incoming().claimedDays >= existing().durationDays && incoming().status == 'completed') ||
+          (incoming().claimedDays < existing().durationDays && incoming().status == 'active')
+        ) &&
+        getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.lastPlanSubId == subId &&
+        getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.balance >= get(/databases/$(database)/documents/users/$(request.auth.uid)).data.balance + incoming().dailyIncome - 0.02;
+
+      allow delete: if false;
+    }
+
+    // --- Admin-Only Encrypted Telegram Configuration Vault ---
+    match /telegramVault/{vaultId} {
+      allow get: if isAdminEmail() && isValidId(vaultId);
+      allow list: if false;
+      allow create: if isAdminEmail() &&
+        isValidId(vaultId) &&
+        isValidTelegramVault(incoming()) &&
+        incoming().id == vaultId &&
+        incoming().updatedAt == request.time;
+      allow update: if isAdminEmail() &&
+        isValidId(vaultId) &&
+        isValidTelegramVault(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'botTokenEnc', 'botInfo', 'channelBotTokenEnc', 'channelBotInfo',
+          'channelChatId', 'channelTitle', 'channelEnabled', 'adminRadarEnabled',
+          'updatedBy', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    // --- Admin-Only Encrypted Android Deposit SMS Gateway Vault ---
+    match /smsGatewayVault/{vaultId} {
+      allow get: if isAdminEmail() && isValidId(vaultId);
+      allow list: if false;
+      allow create: if isAdminEmail() &&
+        isValidId(vaultId) &&
+        isValidSmsGatewayVault(incoming()) &&
+        incoming().id == vaultId &&
+        incoming().updatedAt == request.time;
+      allow update: if isAdminEmail() &&
+        isValidId(vaultId) &&
+        isValidSmsGatewayVault(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'gatewayTokenEnc', 'enabled', 'paymentSmsOnly',
+          'autoMatchAlertTelegram', 'updatedBy', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+  }
+}
