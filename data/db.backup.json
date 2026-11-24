@@ -1,0 +1,180 @@
+{
+  "settings": {
+    "adminEmail": "mdsohag123358@gmail.com",
+    "minWithdrawal": 100,
+    "rewardPerText": 0.1,
+    "rewardPerMath": 3,
+    "rewardPerGrid": 4,
+    "rewardPerSlider": 5,
+    "dailyFreeLimit": 25,
+    "dailySilverLimit": 60,
+    "dailyGoldLimit": 150,
+    "dailyDiamondLimit": 9999,
+    "useVipMultiplier": false,
+    "captchaConfigs": {
+      "text": {
+        "enabled": false,
+        "reward": 0.1,
+        "dailyLimit": 15,
+        "timeLimitSeconds": 35,
+        "cooldownSeconds": 15
+      },
+      "math": {
+        "enabled": false,
+        "reward": 3,
+        "dailyLimit": 20,
+        "timeLimitSeconds": 30,
+        "cooldownSeconds": 0
+      },
+      "image_grid": {
+        "enabled": false,
+        "reward": 4,
+        "dailyLimit": 15,
+        "timeLimitSeconds": 40,
+        "cooldownSeconds": 0
+      },
+      "slider": {
+        "enabled": false,
+        "reward": 5,
+        "dailyLimit": 15,
+        "timeLimitSeconds": 25,
+        "cooldownSeconds": 0
+      }
+    },
+    "adConfig": {
+      "enabled": true,
+      "reward": 5,
+      "minWatchSeconds": 10,
+      "dailyLimit": 15,
+      "cooldownSeconds": 5
+    },
+    "videoAds": [],
+    "paymentNumbers": {
+      "bkash": "01712-345678",
+      "nagad": "01898-765432",
+      "rocket": "01911-223344",
+      "binance": "TXq7ZK9...TRC20Deposit",
+      "bankName": "Islami Bank Bangladesh Ltd",
+      "bankAccount": "2050 1234 5678 9001 (Branch: Motijheel)"
+    },
+    "notice": "স্বাগতম! প্রতি ক্যাপচা পূরণ করে টাকা আয় করুন। বিকাশ, নগদ ও রকেটে দ্রুত পেমেন্ট দেওয়া হয়। অ্যাডমিন সাপোর্ট ২৪/৭ চালু আছে।",
+    "isMaintenance": false
+  },
+  "users": [
+    {
+      "id": "usr-admin-1",
+      "name": "Md Sohag",
+      "email": "mdsohag123358@gmail.com",
+      "avatar": "/src/assets/images/admin_avatar_1794912114789.jpg",
+      "role": "admin",
+      "balance": 0,
+      "totalEarned": 0,
+      "totalWithdrawn": 0,
+      "totalRecharged": 0,
+      "captchasSolvedToday": 0,
+      "totalCaptchasSolved": 0,
+      "vipTier": "silver",
+      "isBanned": false,
+      "joinedAt": "2026-11-17T00:00:00.000Z",
+      "lastLogin": "2026-11-17T11:01:21.491Z",
+      "solvedTodayByType": {
+        "text": 0,
+        "math": 0,
+        "image_grid": 0,
+        "slider": 0
+      },
+      "lastSolvedAtByType": {},
+      "lastSeen": "2026-11-18T03:18:42.566Z",
+      "videosWatchedToday": 0,
+      "totalVideosWatched": 0,
+      "incompleteAdsCount": 0,
+      "totalAdEarned": 0,
+      "completedAdIds": [],
+      "totalAdClicks": 0
+    },
+    {
+      "id": "usr-mr11j4j",
+      "name": "New User",
+      "email": "anyuser@gmail.com",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=anyuser@gmail.com",
+      "role": "user",
+      "balance": 2.5,
+      "totalEarned": 2.5,
+      "totalWithdrawn": 0,
+      "totalRecharged": 0,
+      "captchasSolvedToday": 1,
+      "totalCaptchasSolved": 1,
+      "vipTier": "free",
+      "isBanned": false,
+      "joinedAt": "2026-11-17T11:01:25.864Z",
+      "lastLogin": "2026-11-17T11:01:25.864Z",
+      "solvedTodayByType": {
+        "text": 0,
+        "math": 0,
+        "image_grid": 0,
+        "slider": 0
+      },
+      "lastSolvedAtByType": {},
+      "videosWatchedToday": 0,
+      "totalVideosWatched": 0,
+      "incompleteAdsCount": 0,
+      "totalAdEarned": 0,
+      "completedAdIds": [],
+      "totalAdClicks": 0
+    }
+  ],
+  "recharges": [],
+  "withdrawals": [],
+  "auditLogs": [
+    {
+      "id": "log-1794916608213",
+      "timestamp": "2026-11-17T11:56:48.213Z",
+      "action": "Settings Updated",
+      "actorEmail": "mdsohag123358@gmail.com",
+      "details": "Updated captcha configs (Text: OFF ৳0.1/15/15s, Math: OFF ৳3/20/0s, Grid: OFF ৳4/15/0s, Slider: OFF ৳5/15/0s)"
+    },
+    {
+      "id": "log-1794916497930",
+      "timestamp": "2026-11-17T11:54:57.930Z",
+      "action": "Tier Changed",
+      "actorEmail": "mdsohag123358@gmail.com",
+      "details": "Changed VIP Tier of Md Sohag to SILVER"
+    },
+    {
+      "id": "log-1794916417914",
+      "timestamp": "2026-11-17T11:53:37.914Z",
+      "action": "Tier Changed",
+      "actorEmail": "mdsohag123358@gmail.com",
+      "details": "Changed VIP Tier of Md Sohag to FREE"
+    },
+    {
+      "id": "log-1794916401339",
+      "timestamp": "2026-11-17T11:53:21.339Z",
+      "action": "Settings Updated",
+      "actorEmail": "mdsohag123358@gmail.com",
+      "details": "Updated captcha configs (Text: ON ৳0.1/15/15s, Math: OFF ৳3/20/0s, Grid: OFF ৳4/15/0s, Slider: OFF ৳5/15/0s)"
+    },
+    {
+      "id": "log-1794916370249",
+      "timestamp": "2026-11-17T11:52:50.249Z",
+      "action": "Settings Updated",
+      "actorEmail": "mdsohag123358@gmail.com",
+      "details": "Updated captcha configs (Text: ON ৳1/25/0s, Math: OFF ৳3/20/0s, Grid: OFF ৳4/15/0s, Slider: OFF ৳5/15/0s)"
+    },
+    {
+      "id": "log-1794916369149",
+      "timestamp": "2026-11-17T11:52:49.149Z",
+      "action": "Settings Updated",
+      "actorEmail": "mdsohag123358@gmail.com",
+      "details": "Updated captcha configs (Text: ON ৳1.5/25/0s, Math: OFF ৳3/20/0s, Grid: OFF ৳4/15/0s, Slider: OFF ৳5/15/0s)"
+    },
+    {
+      "id": "log-1794916367936",
+      "timestamp": "2026-11-17T11:52:47.936Z",
+      "action": "Settings Updated",
+      "actorEmail": "mdsohag123358@gmail.com",
+      "details": "Updated captcha configs (Text: ON ৳2/25/0s, Math: OFF ৳3/20/0s, Grid: OFF ৳4/15/0s, Slider: OFF ৳5/15/0s)"
+    }
+  ],
+  "adWatchLogs": []
+}

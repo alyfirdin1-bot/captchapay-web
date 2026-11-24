@@ -1,0 +1,15 @@
+{
+  "totalRecorded": 1,
+  "lastHealedAt": "2026-11-22T14:51:23.479Z",
+  "errors": [
+    {
+      "id": "err-1795359090595-95b734",
+      "timestamp": "2026-11-22T14:51:30.595Z",
+      "message": "Sample test error for telemetry validation",
+      "source": "test_runner",
+      "userAgent": "curl/7.88.1",
+      "count": 1,
+      "alertSent": true
+    }
+  ]
+}

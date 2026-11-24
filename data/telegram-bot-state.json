@@ -1,0 +1,154 @@
+{
+  "botToken": "",
+  "botInfo": {
+    "id": 9119409725,
+    "username": "Ollhistoryappbot",
+    "firstName": "Oll history app bot"
+  },
+  "channelBotToken": "",
+  "channelBotInfo": null,
+  "channelChatId": "",
+  "channelTitle": "",
+  "channelEnabled": true,
+  "lastUpdateId": 95368722,
+  "webhookSecret": "10277a0b2eb1cfce0419559ba34da17452c92a81a63b05f1",
+  "adminRadarEnabled": true,
+  "commandsRegisteredForUsername": "Ollhistoryappbot",
+  "bindings": {
+    "EF8SmmNgNdZuIxJi1e8c2hz32b22": {
+      "uid": "EF8SmmNgNdZuIxJi1e8c2hz32b22",
+      "chatId": "6699575067",
+      "username": "",
+      "name": "MD Sohag",
+      "email": "mdsohag123358@gmail.com",
+      "prefs": {
+        "p2pReceived": true,
+        "p2pSent": true,
+        "withdrawals": true,
+        "recharges": true,
+        "adjustments": true,
+        "announcements": true,
+        "dailyDigest": true,
+        "minAlertAmount": 0,
+        "mutedUntil": ""
+      },
+      "snapshot": {
+        "balance": 89251.5,
+        "totalEarned": 102058.5,
+        "totalWithdrawn": 2006,
+        "totalRecharged": 450,
+        "vipTier": "free",
+        "captchasSolvedToday": 1,
+        "totalCaptchasSolved": 1,
+        "videosWatchedToday": 2,
+        "totalAdEarned": 6,
+        "recentTx": [],
+        "syncedAt": "2026-11-22T08:21:35.292Z"
+      },
+      "linkedAt": "2026-11-22T08:02:40.473Z",
+      "updatedAt": "2026-11-22T08:21:35.292Z"
+    },
+    "9K0huu9HmJclHPhxd61LBNRP70h2": {
+      "uid": "9K0huu9HmJclHPhxd61LBNRP70h2",
+      "chatId": "8437433656",
+      "username": "",
+      "name": "MD Menhj Menhj",
+      "email": "mdmenhjmenhj@gmail.com",
+      "prefs": {
+        "p2pReceived": true,
+        "p2pSent": true,
+        "withdrawals": true,
+        "recharges": true,
+        "adjustments": true,
+        "announcements": true,
+        "dailyDigest": true,
+        "minAlertAmount": 0,
+        "mutedUntil": ""
+      },
+      "snapshot": {
+        "balance": 9998,
+        "totalEarned": 100,
+        "totalWithdrawn": 0,
+        "totalRecharged": 0,
+        "vipTier": "free",
+        "captchasSolvedToday": 2,
+        "totalCaptchasSolved": 2,
+        "videosWatchedToday": 0,
+        "totalAdEarned": 0,
+        "recentTx": [],
+        "syncedAt": "2026-11-22T14:49:56.527Z"
+      },
+      "linkedAt": "2026-11-22T08:27:39.530Z",
+      "updatedAt": "2026-11-22T14:49:56.527Z"
+    }
+  },
+  "logs": [
+    {
+      "id": "tlog-1795359090594-dfc1f7",
+      "timestamp": "2026-11-22T14:51:30.594Z",
+      "eventType": "admin_error_alert",
+      "recipientUid": "EF8SmmNgNdZuIxJi1e8c2hz32b22",
+      "recipientLabel": "Admin Alert (6699575067)",
+      "status": "sent",
+      "summary": "সিস্টেম ক্র্যাশ / এরর অ্যালার্ট: Sample test error for telemetry validation"
+    },
+    {
+      "id": "tlog-1795338592749-8463ba",
+      "timestamp": "2026-11-22T09:09:52.749Z",
+      "eventType": "user_test",
+      "recipientUid": "9K0huu9HmJclHPhxd61LBNRP70h2",
+      "recipientLabel": "MD Menhj Menhj (8437433656)",
+      "status": "sent",
+      "summary": "ইউজার টেস্ট লাইভ রিসিট"
+    },
+    {
+      "id": "tlog-1795336059531-32f50a",
+      "timestamp": "2026-11-22T08:27:39.531Z",
+      "eventType": "account_linked_manual",
+      "recipientUid": "9K0huu9HmJclHPhxd61LBNRP70h2",
+      "recipientLabel": "MD Menhj Menhj (8437433656)",
+      "status": "sent",
+      "summary": "ম্যানুয়াল Chat ID ভেরিফিকেশন সফল"
+    },
+    {
+      "id": "tlog-1795335208108-0168d5",
+      "timestamp": "2026-11-22T08:13:28.108Z",
+      "eventType": "admin_radar_recharge",
+      "recipientUid": "EF8SmmNgNdZuIxJi1e8c2hz32b22",
+      "recipientLabel": "Admin Radar (6699575067)",
+      "status": "sent",
+      "summary": "নতুন রিচার্জ রিকোয়েস্ট ৳100.00 (01617467646)"
+    },
+    {
+      "id": "tlog-1795334731741-d9d825",
+      "timestamp": "2026-11-22T08:05:31.741Z",
+      "eventType": "user_test",
+      "recipientUid": "EF8SmmNgNdZuIxJi1e8c2hz32b22",
+      "recipientLabel": "MD Sohag (6699575067)",
+      "status": "sent",
+      "summary": "ইউজার টেস্ট লাইভ রিসিট"
+    },
+    {
+      "id": "tlog-1795334605684-cd7db6",
+      "timestamp": "2026-11-22T08:03:25.685Z",
+      "eventType": "withdrawal_approved",
+      "recipientUid": "EF8SmmNgNdZuIxJi1e8c2hz32b22",
+      "recipientLabel": "MD Sohag (6699575067)",
+      "status": "sent",
+      "summary": "উইথড্র অ্যাপ্রুভ ৳100.00 (bKash)"
+    },
+    {
+      "id": "tlog-1795334560473-0cd308",
+      "timestamp": "2026-11-22T08:02:40.474Z",
+      "eventType": "account_linked_manual",
+      "recipientUid": "EF8SmmNgNdZuIxJi1e8c2hz32b22",
+      "recipientLabel": "MD Sohag (6699575067)",
+      "status": "sent",
+      "summary": "ম্যানুয়াল Chat ID ভেরিফিকেশন সফল"
+    }
+  ],
+  "dispatchedKeys": [
+    "withdrawal:WDR-1795334093351-0gotxyav:approved",
+    "radar_r:RCH-1795335319472-0gpvjx2s"
+  ]
+}
